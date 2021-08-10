@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from sklearn.cluster import AgglomerativeClustering
+from sklearn import metrics
 from sklearn.decomposition import PCA
 
 
@@ -38,15 +39,16 @@ def univariate_clustering(data, col_name, nb_clusters=3, metric="euclidean", lin
             (cluster_index, np.max(copy_data.values))
             )
 
-    # give name to clusters { High, medium, low }
-    arr_max_vals.sort(key=lambda item: item[1], reverse=True)
+    # # give name to clusters { High, medium, low }
+    # arr_max_vals.sort(key=lambda item: item[1], reverse=True)
 
-    for key, new_cluster_name in zip([item[0] for item in arr_max_vals], ["High", "Medium", "Low"]):
-        dict_cluster[new_cluster_name] = dict_cluster.pop(key)
+    # for key, new_cluster_name in zip([item[0] for item in arr_max_vals], ["High", "Medium", "Low"]):
+    #     dict_cluster[new_cluster_name] = dict_cluster.pop(key)
 
-    # return dict { cluster_name: arr_years }
-    return { key: val.index for key, val in dict_cluster.items() }
+    # # return dict { cluster_name: arr_years }
+    # return { key: val.index for key, val in dict_cluster.items() }
 
+    return { cluster_index: cluster_data.index for cluster_index, cluster_data in dict_cluster.items() }
 
 
 # preform multivariate clustering 
@@ -59,49 +61,10 @@ def multivariate_clustering(data, nb_clusters=3, metric="euclidean", linkage_met
     for col in selected_cols:
         dict_data[col] = isolate_data_col(data, col_name=col)
 
-    # standarize and rescale
-    # standarize
-    dict_standarized_data = {}
-
-    for col in selected_cols:
-      # select data
-      data = dict_data[col].copy()
-
-      # scale data
-      max_val = np.max(data.values)
-      min_val = np.min(data.values)
-      data = (data - min_val) / (max_val - min_val)
-
-      # standarize each var
-      for var in dict_data[col]:
-        data[var] = (data[var] - data[var].mean())
-
-      dict_standarized_data[col] = data
-    
-    # perform PCA: nb selected components are from PCA univariate analysis
-    arr_nb_PC = [6, 7, 8, 8]
-    # where to store pca
-    dict_pca = {}
-    # where to store transformed data
-    dict_transformed_data = {}
-
-    # loop over weather vars
-    for col, n in zip(selected_cols, arr_nb_PC):
-      # build pca
-      pca = PCA(n_components=n)
-      pca.fit(dict_standarized_data[col])
-
-      dict_pca[col] = pca
-    
-      # transform data
-      dict_transformed_data[col] = pd.DataFrame(pca.transform(dict_standarized_data[col]), index=dict_standarized_data[col].index)
-
-    # join transformed data sets
-    merged_data = dict_transformed_data["cumulative_GDD"].join(dict_transformed_data["cumulative_PRECTOT"], rsuffix='_other')
-
-    # for col in selected_cols[2:]:
-    #     merged_data = merged_data.join(dict_transformed_data[col], rsuffix='_other_')
-    
+    # prepare data of multi clustering
+    # reduce and merge data
+    merged_data = reduce_merge_multivariate_data(dict_data)
+  
     # perform the clustering
     X = merged_data
     model = AgglomerativeClustering(n_clusters=nb_clusters, linkage=linkage_method, affinity=metric)
@@ -133,20 +96,20 @@ def multivariate_clustering(data, nb_clusters=3, metric="euclidean", linkage_met
             (cluster_index, np.max(copy_data.values))
             )
 
-    # give name to clusters { High, medium, low }
-    arr_max_vals.sort(key=lambda item: item[1], reverse=True)
+    # # give name to clusters { High, medium, low }
+    # arr_max_vals.sort(key=lambda item: item[1], reverse=True)
 
-    for key, new_cluster_name in zip([item[0] for item in arr_max_vals], ["High", "Medium", "Low"]):
-      dict_cluster[new_cluster_name] = dict_cluster.pop(key)
+    # for key, new_cluster_name in zip([item[0] for item in arr_max_vals], ["High", "Medium", "Low"]):
+    #   dict_cluster[new_cluster_name] = dict_cluster.pop(key)
 
-    # return dict { cluster_name: arr_years }
-    return { key: val.index for key, val in dict_cluster.items() }
+    # # return dict { cluster_name: arr_years }
+    # return { key: val.index for key, val in dict_cluster.items() }
+    return { cluster_index: cluster_data.index for cluster_index, cluster_data in dict_cluster.items() }
 
 
 # split function
 # split according to weather variables
 def isolate_data_col(data, col_name):
-
   frame = {}
 
   for year in data["crop_year"].value_counts().sort_index().index:
@@ -154,9 +117,82 @@ def isolate_data_col(data, col_name):
     query = data["crop_year"] == year
     frame[year] = data[query][col_name].values
 
-
   # build data and then transpose
   data_cluster = pd.DataFrame(frame)
   data_cluster = data_cluster.T
 
   return data_cluster
+
+
+# prepare data for multi clustering
+def reduce_merge_multivariate_data(dict_data, selected_cols=["cumulative_GDD", "cumulative_PRECTOT", "cumulative_RH2M", "cumulative_WS2M"]):
+  # standarize and rescale
+  # standarize
+  dict_standarized_data = {}
+
+  for col in selected_cols:
+    # select data
+    data = dict_data[col].copy()
+    # scale data
+    max_val = np.max(data.values)
+    min_val = np.min(data.values)
+    data = (data - min_val) / (max_val - min_val)
+    # standarize each var
+    for var in dict_data[col]:
+      data[var] = (data[var] - data[var].mean())
+    dict_standarized_data[col] = data
+  
+  # perform PCA: nb selected components are from PCA univariate analysis
+  arr_nb_PC = [10 for col in selected_cols] 
+  # where to store pca
+  dict_pca = {}
+  # where to store transformed data
+  dict_transformed_data = {}
+
+  # loop over weather vars
+  for col, n in zip(selected_cols, arr_nb_PC):
+    # build pca
+    pca = PCA(n_components=n)
+    pca.fit(dict_standarized_data[col])
+    dict_pca[col] = pca
+  
+    # transform data
+    dict_transformed_data[col] = pd.DataFrame(pca.transform(dict_standarized_data[col]), index=dict_standarized_data[col].index)
+  
+  # join transformed data sets
+  merged_data = dict_transformed_data["cumulative_GDD"].join(dict_transformed_data["cumulative_PRECTOT"], rsuffix='_other')
+
+  for col in selected_cols[2:]:
+    merged_data = merged_data.join(dict_transformed_data[col], rsuffix='_other_')
+
+  return merged_data
+
+
+# compute the best Calanski-Harabasz index
+# params: the provided data have to be already processed for clustering
+def get_best_number_clusters(data, metric="euclidean", linkage_method="ward"):
+  # where to store CH index
+  arr_calanski = {}
+  
+  # max possible number of cluster
+  max_k = 10
+  
+  # data
+  X = data
+  
+  # loop over number of clusters
+  for k in range(2, max_k):
+    # build model 
+    model = AgglomerativeClustering(n_clusters=k, linkage=linkage_method, affinity=metric)
+    model = model.fit(X)
+  
+    # clusters label
+    labels = model.fit_predict(X)
+  
+    # compute calanski metric
+    m = metrics.calinski_harabasz_score(X, labels)
+  
+    arr_calanski[k] = m
+
+  return arr_calanski
+    
