@@ -1,3 +1,4 @@
 raw_data/weather_regions
+raw_data/all_weather_regions.csv
 processed_data/individual_regions
 py_scripts/__pycache__

@@ -39,16 +39,15 @@ def univariate_clustering(data, col_name, nb_clusters=3, metric="euclidean", lin
             (cluster_index, np.max(copy_data.values))
             )
 
-    # # give name to clusters { High, medium, low }
-    # arr_max_vals.sort(key=lambda item: item[1], reverse=True)
+    # give name to clusters { High, medium, low }
+    arr_max_vals.sort(key=lambda item: item[1], reverse=True)
 
-    # for key, new_cluster_name in zip([item[0] for item in arr_max_vals], ["High", "Medium", "Low"]):
-    #     dict_cluster[new_cluster_name] = dict_cluster.pop(key)
+    for key, new_cluster_name in zip([item[0] for item in arr_max_vals], ["High", "Medium", "Low"]):
+        dict_cluster[new_cluster_name] = dict_cluster.pop(key)
 
-    # # return dict { cluster_name: arr_years }
-    # return { key: val.index for key, val in dict_cluster.items() }
-
-    return { cluster_index: cluster_data.index for cluster_index, cluster_data in dict_cluster.items() }
+    # return dict { cluster_name: arr_years }
+    return { key: val.index for key, val in dict_cluster.items() }
+    # return { cluster_index: cluster_data.index for cluster_index, cluster_data in dict_cluster.items() }
 
 
 # preform multivariate clustering 
@@ -96,15 +95,15 @@ def multivariate_clustering(data, nb_clusters=3, metric="euclidean", linkage_met
             (cluster_index, np.max(copy_data.values))
             )
 
-    # # give name to clusters { High, medium, low }
-    # arr_max_vals.sort(key=lambda item: item[1], reverse=True)
+    # give name to clusters { High, medium, low }
+    arr_max_vals.sort(key=lambda item: item[1], reverse=True)
 
-    # for key, new_cluster_name in zip([item[0] for item in arr_max_vals], ["High", "Medium", "Low"]):
-    #   dict_cluster[new_cluster_name] = dict_cluster.pop(key)
+    for key, new_cluster_name in zip([item[0] for item in arr_max_vals], ["High", "Medium", "Low"]):
+      dict_cluster[new_cluster_name] = dict_cluster.pop(key)
 
-    # # return dict { cluster_name: arr_years }
-    # return { key: val.index for key, val in dict_cluster.items() }
-    return { cluster_index: cluster_data.index for cluster_index, cluster_data in dict_cluster.items() }
+    # return dict { cluster_name: arr_years }
+    return { key: val.index for key, val in dict_cluster.items() }
+    # return { cluster_index: cluster_data.index for cluster_index, cluster_data in dict_cluster.items() }
 
 
 # split function
