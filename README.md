@@ -49,4 +49,4 @@ After doing that, we stack these data frames, one after the other, to form a sum
 
 ### Preparing data
 
-In order to visualize a map of the clusters, we retain the uni (with regard to precipitation) and multi variate clustering for a number of clusters equal to **3**. In fact, the analysis of the summary of the clustering we notice a dominence of precipitation as weather variable. Similarly when computing the mean of the number of regions we find **2.63**. Therefore, we choose **3** as number of clusters after rounding.
+In order to visualize a map of the clusters, we retain the uni (with regard to precipitation) and multi variate clustering for a number of clusters equal to **3**. In fact, the analysis of the summary of the clustering suggest the dominence of precipitation as weather variable. Similarly when computing the mean of the number of regions we find **2.63**. Therefore, we choose **3** as number of clusters after rounding.
