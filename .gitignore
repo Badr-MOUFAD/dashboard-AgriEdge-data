@@ -1,4 +1,9 @@
+py_scripts/__pycache__
+
 raw_data/weather_regions
 raw_data/all_weather_regions.csv
+
 processed_data/individual_regions
-py_scripts/__pycache__
+
+ready_to_use_data/centroids
+ready_to_use_data/year_clusters
