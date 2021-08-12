@@ -7,3 +7,6 @@ processed_data/individual_regions
 
 ready_to_use_data/centroids
 ready_to_use_data/year_clusters
+
+ready_to_use_data/years_multi
+ready_to_use_data/years_uni
